@@ -76,7 +76,12 @@
             <artifactId>jsoup</artifactId>
             <version>1.13.1</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/com.googlecode.jmapper-framework/jmapper-core -->
+        <dependency>
+            <groupId>com.googlecode.jmapper-framework</groupId>
+            <artifactId>jmapper-core</artifactId>
+            <version>1.6.1.CR2</version>
+        </dependency>
     </dependencies>
 
     <build>
