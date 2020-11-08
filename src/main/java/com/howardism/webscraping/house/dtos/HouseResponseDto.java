@@ -3,7 +3,6 @@ package com.howardism.webscraping.house.dtos;
 import com.googlecode.jmapper.annotations.JMap;
 import lombok.Data;
 
-import javax.persistence.Column;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,7 +15,6 @@ public class HouseResponseDto {
     private LocalDateTime effectiveDate;
 
     @JMap
-    @Column(nullable = false)
     private Float price;
 
     @JMap
@@ -41,7 +39,6 @@ public class HouseResponseDto {
     private String address;
 
     @JMap
-    @Column(nullable = false)
     private String style;
 
     @JMap
@@ -78,14 +75,11 @@ public class HouseResponseDto {
     private Float landSize;
 
     @JMap
-    @Column(nullable = false)
     private LocalDateTime timestamp;
 
     @JMap
-    @Column(nullable = false)
     private Long duration;
 
     @JMap
-    @Column(nullable = false)
     private String url;
 }
