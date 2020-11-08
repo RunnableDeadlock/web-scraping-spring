@@ -1,0 +1,10 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: "jdbc:postgresql://{dbendpoint}:{dbport}/{dbname}"
+    username: { dbuser }
+    password: { dbpassword }
+    driver-class-name: org.postgresql.Driver
