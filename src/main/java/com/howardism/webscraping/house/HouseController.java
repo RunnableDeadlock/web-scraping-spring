@@ -3,7 +3,6 @@ package com.howardism.webscraping.house;
 import com.googlecode.jmapper.JMapper;
 import com.howardism.webscraping.house.dtos.HouseResponseDto;
 import com.howardism.webscraping.house.interfaces.HouseService;
-import com.howardism.webscraping.utils.IterableHelper;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,7 @@ public class HouseController {
     private final HouseService houseService;
 
     @GetMapping("{slug}")
-    public ResponseEntity<HouseResponseDto> findHouseByUrl(@PathVariable String slug) {
+    public ResponseEntity<HouseResponseDto> findHouseBySlug(@PathVariable String slug) {
         Optional<HouseEntity> house = this.houseService.findOne(slug);
 
         if (house.isEmpty()) {
@@ -41,9 +40,7 @@ public class HouseController {
 
     @GetMapping()
     public ResponseEntity<Long> getHouses() {
-        Iterable<HouseEntity> house = this.houseService.findAll();
-        Long count = IterableHelper.size(house);
-        return this.transform(count);
+        return this.transform(this.houseService.count());
     }
 
     private HouseResponseDto convertToDto(HouseEntity house) {

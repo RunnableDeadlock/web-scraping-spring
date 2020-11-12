@@ -4,6 +4,7 @@ import com.howardism.webscraping.house.HouseEntity;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -11,8 +12,10 @@ public interface HouseService {
 
     Optional<HouseEntity> findOne(String slug);
 
-    Iterable<HouseEntity> findAll();
+    List<HouseEntity> findAll();
 
     HouseEntity parse(String slug) throws IOException;
+
+    Long count();
 }
 

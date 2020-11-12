@@ -4,14 +4,17 @@ import com.howardism.webscraping.house.interfaces.HouseParsingService;
 import com.howardism.webscraping.house.interfaces.HouseRepository;
 import com.howardism.webscraping.house.interfaces.HouseService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class HouseServiceImpl implements HouseService {
 
     private final HouseRepository houseRepository;
@@ -19,7 +22,7 @@ public class HouseServiceImpl implements HouseService {
 
     @Override
     public HouseEntity parse(String slug) throws IOException {
-        HouseEntity house = this.houseParsingService.parse(this.formatUrl(slug));
+        HouseEntity house = this.houseParsingService.parseSinglePage(this.formatUrl(slug));
         return this.houseRepository.save(house);
     }
 
@@ -30,8 +33,13 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public Iterable<HouseEntity> findAll() {
+    public List<HouseEntity> findAll() {
         return this.houseRepository.findAll();
+    }
+
+    @Override
+    public Long count() {
+        return this.houseRepository.count();
     }
 
     private String formatUrl(String slug) {
