@@ -44,14 +44,14 @@ class HouseServiceImplTest {
 
     @Test
     void parseShouldReturnHouse() throws IOException {
-        HouseEntity house = this.houseService.parse("123");
+        HouseEntity house = this.houseService.parseAndSave("123");
         Assertions.assertEquals(house.getName(), "Test House");
     }
 
     @Test()
     void parseShouldThrowGivenUnknownUrl() throws IOException {
         Mockito.when(houseParsingService.parseSinglePage(Mockito.anyString())).thenThrow(IOException.class);
-        Assertions.assertThrows(IOException.class, () -> this.houseService.parse("unknown"));
+        Assertions.assertThrows(IOException.class, () -> this.houseService.parseAndSave("unknown"));
     }
 
     @Test

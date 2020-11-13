@@ -14,8 +14,12 @@ public interface HouseService {
 
     List<HouseEntity> findAll();
 
-    HouseEntity parse(String slug) throws IOException;
+    HouseEntity parseAndSave(String slug) throws IOException;
 
     Long count();
+
+    boolean parseIndexPage(String startingUrl) throws InterruptedException;
+
+    boolean parseIndexPages(String startingUrl, int pageCount) throws InterruptedException;
 }
 
