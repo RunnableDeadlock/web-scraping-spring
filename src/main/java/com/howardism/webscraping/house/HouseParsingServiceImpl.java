@@ -1,29 +1,37 @@
 package com.howardism.webscraping.house;
 
+import com.howardism.webscraping.common.utils.SSLHelper;
 import com.howardism.webscraping.house.interfaces.HouseParsingService;
-import com.howardism.webscraping.utils.SSLHelper;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.openqa.selenium.WebElement;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class HouseParsingServiceImpl implements HouseParsingService {
 
     private final Pattern DATETIME_PATTERN = Pattern.compile("\\d{1,4}-\\d{1,2}-\\d{1,2}");
     private final Pattern FLOAT_PATTERN = Pattern.compile("^\\d*\\.\\d+|\\d+\\.\\d*$|\\d+");
+    private final Pattern PATH_PATTERN = Pattern.compile("/home/house/detail/2/(\\d+)\\.html");
 
     @Override
-    public HouseEntity parse(String url) throws IOException {
+    public HouseEntity parseSinglePage(String url) throws IOException {
 
         LocalDateTime currentTime = LocalDateTime.now();
 
@@ -42,14 +50,17 @@ public class HouseParsingServiceImpl implements HouseParsingService {
         Element effectiveDate = doc.selectFirst("span.detail-info-span.pull-right");
 
         Elements floorInfo = doc.select("div.info-floor-left");
-        @SuppressWarnings("SpellCheckingInspection")
         Elements addressInfo = doc.select("div.info-addr-content");
         Elements houseDetail = doc.select("div.detail-house-item");
 
         HouseEntity house = new HouseEntity();
 
         house.setName(title.text());
-        house.setPrice(Float.parseFloat(price.text()));
+
+        Matcher priceMatcher = this.FLOAT_PATTERN.matcher(price.text());
+        if (priceMatcher.find()) {
+            house.setPrice(Float.parseFloat(priceMatcher.group()));
+        }
 
         Matcher matcher = this.DATETIME_PATTERN.matcher(effectiveDate.text());
         if (matcher.find())
@@ -70,10 +81,31 @@ public class HouseParsingServiceImpl implements HouseParsingService {
         return house;
     }
 
+    @Override
+    public List<String> parseIndexPage(List<WebElement> webElements, Set<String> existedUrls) {
+        Iterator<WebElement> webElementIterator = webElements.iterator();
+        List<String> newUrls = new ArrayList<>();
+        while (webElementIterator.hasNext()) {
+            String outerHtml = webElementIterator.next().getAttribute("outerHTML");
+
+            Matcher pathMatcher = PATH_PATTERN.matcher(outerHtml);
+            if (pathMatcher.find()) {
+                String url = "https://sale.591.com.tw" + pathMatcher.group();
+                if (existedUrls.contains(url)) {
+                    continue;
+                }
+
+                newUrls.add(url);
+                existedUrls.add(url);
+            }
+        }
+        return newUrls;
+    }
+
     private void parseHouseDetail(Elements elements, HouseEntity house) {
         elements.forEach(element -> {
-            String key = element.getElementsByClass("detail-house-key").text();
-            String value = element.getElementsByClass("detail-house-value").text();
+            String key = getText(element, "detail-house-key");
+            String value = getText(element, "detail-house-value");
             switch (key) {
                 case "現況":
                     house.setStyle(value);
@@ -141,12 +173,17 @@ public class HouseParsingServiceImpl implements HouseParsingService {
                     break;
                 }
 
-/*
-                TODO:
-                Here do not throw RuntimeException because some other
-                divs can be included, need String filtering
-*/
+                case "現況坪數": {
+                    Matcher matcher = this.FLOAT_PATTERN.matcher(value);
+                    if (matcher.find())
+                        house.setCurrentSize(Float.parseFloat(matcher.group()));
+                    break;
+                }
+
                 default:
+                    if (key.length() > 0) {
+                        this.logMissingInfo(key, value);
+                    }
                     break;
             }
         });
@@ -154,10 +191,8 @@ public class HouseParsingServiceImpl implements HouseParsingService {
 
     private void parseAddressInfo(Elements elements, HouseEntity house) {
         elements.forEach(element -> {
-            @SuppressWarnings("SpellCheckingInspection")
-            String key = element.getElementsByClass("info-addr-key").text();
-            @SuppressWarnings("SpellCheckingInspection")
-            String value = element.getElementsByClass("info-addr-value").text();
+            String key = getText(element, "info-addr-key");
+            String value = getText(element, "info-addr-value");
             switch (key) {
                 case "樓層":
                     house.setFloor(value);
@@ -176,15 +211,15 @@ public class HouseParsingServiceImpl implements HouseParsingService {
                     break;
 
                 default:
-                    throw new RuntimeException("key=" + key + " is not set in HouseEntity, with value=" + value);
+                    this.logMissingInfo(key, value);
             }
         });
     }
 
     private void parseFloorInfo(Elements elements, HouseEntity house) {
         elements.forEach(element -> {
-            String value = element.getElementsByClass("info-floor-key").text();
-            String key = element.getElementsByClass("info-floor-value").text();
+            String value = getText(element, "info-floor-key");
+            String key = getText(element, "info-floor-value");
             switch (key) {
                 case "格局":
                     house.setFormat(value);
@@ -204,9 +239,21 @@ public class HouseParsingServiceImpl implements HouseParsingService {
                     break;
                 }
 
+                case "車位種類": {
+                    throw new RuntimeException("This a parking slot instead of a house");
+                }
+
                 default:
-                    throw new RuntimeException("key=" + key + " is not set in HouseEntity, with value=" + value);
+                    this.logMissingInfo(key, value);
             }
         });
+    }
+
+    private String getText(Element element, String classname) {
+        return element.getElementsByClass(classname).text().replace(" ", "");
+    }
+
+    private void logMissingInfo(String key, String value) {
+        log.error("key={} is not set in HouseEntity, with value={}", key, value);
     }
 }
