@@ -37,7 +37,7 @@ public class HouseControllerTest {
     @Test
     void findHouseByUrlShouldReturn404() throws Exception {
         Mockito.when(houseService.findOne(Mockito.anyString())).thenReturn(Optional.empty());
-        Mockito.when(houseService.parse(Mockito.anyString())).thenThrow(IOException.class);
+        Mockito.when(houseService.parseAndSave(Mockito.anyString())).thenThrow(IOException.class);
         this.mockMvc.perform(MockMvcRequestBuilders.get("/houses/Unknown"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
