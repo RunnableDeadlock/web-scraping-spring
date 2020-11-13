@@ -1,4 +1,4 @@
-package com.howardism.webscraping.utils;
+package com.howardism.webscraping.common.utils;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
