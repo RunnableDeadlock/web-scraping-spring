@@ -28,7 +28,8 @@ public class Page591ServiceImpl implements PageService {
 
     @Override
     public void close() {
-        this.driver.close();
+        this.driver.quit();
+        this.driver = null;
     }
 
     @Override
