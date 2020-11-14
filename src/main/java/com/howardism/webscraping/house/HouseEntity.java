@@ -44,21 +44,22 @@ public class HouseEntity {
      * detail-house
      * 現況,型態,裝潢程度,管理費
      * 帶租約,法定用途,車位,公設比
-     * 主建物,共用部分,附屬建物,土地坪數
+     * 主建物,共用部分,附屬建物,土地坪數, 現況坪數
      */
     private String style;
     private String type;
     private String decorationLevel;
-    private Float monthlyAdminCost=0f;
+    private Float monthlyAdminCost = 0f;
 
     private Boolean withRent;
     private String legalUsage = "未知";
-    private String parking;
-    private Float sharedRatio=0f;
-    private Float mainSize=0f;
-    private Float sharedSize=0f;
-    private Float extraSize=0f;
-    private Float landSize=0f;
+    private String parking = "無";
+    private Float sharedRatio = 0f;
+    private Float mainSize = 0f;
+    private Float sharedSize = 0f;
+    private Float extraSize = 0f;
+    private Float landSize = 0f;
+    private Float currentSize = 0f;
 
     /**
      * other system info
